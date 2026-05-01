@@ -3,69 +3,89 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Village Mart</title>
+<title>Village Mart Advanced</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f5f5f5;
-}
+body { font-family: Arial; margin:0; background:#f5f5f5; }
 
 header {
-    background: #2e7d32;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    font-size: 24px;
+    background:#2e7d32;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:22px;
 }
 
+/* Search */
+.search-box {
+    padding:10px;
+    text-align:center;
+}
+input {
+    padding:10px;
+    width:80%;
+    font-size:16px;
+}
+
+/* Categories */
+.categories {
+    display:flex;
+    justify-content:space-around;
+    padding:10px;
+}
+.categories button {
+    padding:10px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    background:#ddd;
+}
+
+/* Products */
 .products {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 12px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    padding:10px;
 }
 
 .card {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    text-align: center;
-    font-size: 18px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.card img {
-    width: 80px;
-    height: 80px;
+    background:white;
+    padding:10px;
+    border-radius:10px;
+    text-align:center;
 }
 
 button {
-    margin-top: 8px;
-    padding: 10px;
-    font-size: 16px;
-    width: 100%;
-    border: none;
-    border-radius: 8px;
-    background: #ff9800;
-    color: white;
+    padding:8px;
+    margin-top:5px;
+    width:100%;
+    background:#ff9800;
+    border:none;
+    border-radius:6px;
+    color:white;
 }
 
+/* Cart */
 .cart {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: #000;
-    color: white;
-    padding: 12px;
-    font-size: 18px;
-    text-align: center;
+    background:black;
+    color:white;
+    padding:10px;
+    position:fixed;
+    bottom:0;
+    width:100%;
+    text-align:center;
 }
 
-.order-btn {
-    background: #4CAF50;
-    margin-top: 5px;
+/* Order Form */
+.form {
+    display:none;
+    background:white;
+    padding:15px;
+}
+.form input {
+    width:95%;
+    margin:5px 0;
 }
 </style>
 </head>
@@ -74,67 +94,110 @@ button {
 
 <header>🛒 Village Mart</header>
 
-<div class="products">
-
-<div class="card">
-<img src="https://img.icons8.com/color/96/potato.png"/>
-<br>🥔 Potato<br>₹20/kg
-<button onclick="addItem('Potato')">Add</button>
+<div class="search-box">
+<input type="text" placeholder="Search..." onkeyup="searchItem(this.value)">
 </div>
 
-<div class="card">
-<img src="https://img.icons8.com/color/96/tomato.png"/>
-<br>🍅 Tomato<br>₹25/kg
-<button onclick="addItem('Tomato')">Add</button>
+<div class="categories">
+<button onclick="filterCategory('all')">All</button>
+<button onclick="filterCategory('veg')">Vegetables</button>
+<button onclick="filterCategory('fruit')">Fruits</button>
 </div>
 
-<div class="card">
-<img src="https://img.icons8.com/color/96/onion.png"/>
-<br>🧅 Onion<br>₹30/kg
-<button onclick="addItem('Onion')">Add</button>
-</div>
+<div class="products" id="products"></div>
 
-<div class="card">
-<img src="https://img.icons8.com/color/96/banana.png"/>
-<br>🍌 Banana<br>₹40/dozen
-<button onclick="addItem('Banana')">Add</button>
-</div>
-
+<div class="form" id="orderForm">
+<h3>Enter Details</h3>
+<input type="text" id="name" placeholder="Name">
+<input type="text" id="phone" placeholder="Phone">
+<input type="text" id="address" placeholder="Address">
+<button onclick="placeOrder()">Confirm Order</button>
 </div>
 
 <div class="cart">
-🧺 Cart: <span id="count">0</span> items
+🧺 Items: <span id="count">0</span> | ₹<span id="total">0</span>
 <br>
-<button class="order-btn" onclick="placeOrder()">Place Order</button>
+<button onclick="showForm()">Order</button>
 </div>
 
 <script>
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let items = [
+    {name:"Potato", price:20, category:"veg"},
+    {name:"Tomato", price:25, category:"veg"},
+    {name:"Onion", price:30, category:"veg"},
+    {name:"Banana", price:40, category:"fruit"}
+];
 
-function addItem(item) {
-    cart.push(item);
-    localStorage.setItem("cart", JSON.stringify(cart));
+let cart = {};
+
+function displayProducts(list) {
+    let html = "";
+    list.forEach(item => {
+        html += `
+        <div class="card">
+            ${item.name}<br>₹${item.price}
+            <button onclick="addItem('${item.name}',${item.price})">Add</button>
+        </div>`;
+    });
+    document.getElementById("products").innerHTML = html;
+}
+
+function addItem(name, price) {
+    if(cart[name]) {
+        cart[name].qty++;
+    } else {
+        cart[name] = {price:price, qty:1};
+    }
     updateCart();
 }
 
 function updateCart() {
-    document.getElementById("count").innerText = cart.length;
+    let count = 0, total = 0;
+    for(let item in cart) {
+        count += cart[item].qty;
+        total += cart[item].qty * cart[item].price;
+    }
+    document.getElementById("count").innerText = count;
+    document.getElementById("total").innerText = total;
+}
+
+function searchItem(text) {
+    let filtered = items.filter(i => i.name.toLowerCase().includes(text.toLowerCase()));
+    displayProducts(filtered);
+}
+
+function filterCategory(cat) {
+    if(cat === "all") {
+        displayProducts(items);
+    } else {
+        let filtered = items.filter(i => i.category === cat);
+        displayProducts(filtered);
+    }
+}
+
+function showForm() {
+    document.getElementById("orderForm").style.display = "block";
 }
 
 function placeOrder() {
-    if (cart.length === 0) {
-        alert("Cart is empty!");
-        return;
+    let name = document.getElementById("name").value;
+    let phone = document.getElementById("phone").value;
+    let address = document.getElementById("address").value;
+
+    let order = "Order:\n";
+    for(let item in cart) {
+        order += item + " x" + cart[item].qty + "\n";
     }
 
-    let message = "Order: " + cart.join(", ");
-    let phone = "919999999999"; // replace with real number
+    order += "\nName: " + name;
+    order += "\nPhone: " + phone;
+    order += "\nAddress: " + address;
 
-    let whatsappURL = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
-    window.open(whatsappURL, "_blank");
+    let url = "https://wa.me/91XXXXXXXXXX?text=" + encodeURIComponent(order);
+    window.open(url, "_blank");
 }
 
-updateCart();
+displayProducts(items);
 </script>
 
 </body>
