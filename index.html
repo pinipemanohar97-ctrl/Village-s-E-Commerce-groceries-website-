@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Village Mart</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f5f5f5;
+}
+
+header {
+    background: #2e7d32;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 24px;
+}
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 12px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.card img {
+    width: 80px;
+    height: 80px;
+}
+
+button {
+    margin-top: 8px;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    background: #ff9800;
+    color: white;
+}
+
+.cart {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #000;
+    color: white;
+    padding: 12px;
+    font-size: 18px;
+    text-align: center;
+}
+
+.order-btn {
+    background: #4CAF50;
+    margin-top: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<header>🛒 Village Mart</header>
+
+<div class="products">
+
+<div class="card">
+<img src="https://img.icons8.com/color/96/potato.png"/>
+<br>🥔 Potato<br>₹20/kg
+<button onclick="addItem('Potato')">Add</button>
+</div>
+
+<div class="card">
+<img src="https://img.icons8.com/color/96/tomato.png"/>
+<br>🍅 Tomato<br>₹25/kg
+<button onclick="addItem('Tomato')">Add</button>
+</div>
+
+<div class="card">
+<img src="https://img.icons8.com/color/96/onion.png"/>
+<br>🧅 Onion<br>₹30/kg
+<button onclick="addItem('Onion')">Add</button>
+</div>
+
+<div class="card">
+<img src="https://img.icons8.com/color/96/banana.png"/>
+<br>🍌 Banana<br>₹40/dozen
+<button onclick="addItem('Banana')">Add</button>
+</div>
+
+</div>
+
+<div class="cart">
+🧺 Cart: <span id="count">0</span> items
+<br>
+<button class="order-btn" onclick="placeOrder()">Place Order</button>
+</div>
+
+<script>
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+function addItem(item) {
+    cart.push(item);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCart();
+}
+
+function updateCart() {
+    document.getElementById("count").innerText = cart.length;
+}
+
+function placeOrder() {
+    if (cart.length === 0) {
+        alert("Cart is empty!");
+        return;
+    }
+
+    let message = "Order: " + cart.join(", ");
+    let phone = "919999999999"; // replace with real number
+
+    let whatsappURL = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
+    window.open(whatsappURL, "_blank");
+}
+
+updateCart();
+</script>
+
+</body>
+</html>
